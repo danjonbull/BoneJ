@@ -50,7 +50,6 @@ import ij.gui.GenericDialog;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
 import ij.gui.PointRoi;
-import ij.gui.Roi;
 import ij.gui.ScrollbarWithLabel;
 import ij.measure.Calibration;
 import ij.plugin.Duplicator;
