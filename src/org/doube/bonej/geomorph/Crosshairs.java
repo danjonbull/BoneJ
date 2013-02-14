@@ -201,29 +201,29 @@ public class Crosshairs implements UniverseListener, KeyListener {
 		cZ.setColor(color);
 	}
 
-	@Override
+	
 	public void canvasResized() {
 		// TODO Auto-generated method stub
 
 	}
 
-	@Override
+	
 	public void contentAdded(Content c) {
 		// TODO Auto-generated method stub
 
 	}
 
-	@Override
+	
 	public void contentChanged(Content c) {
 	}
 
-	@Override
+	
 	public void contentRemoved(Content c) {
 		// TODO Auto-generated method stub
 
 	}
 
-	@Override
+	
 	public void contentSelected(Content c) {
 		resetColor();
 		Color3f red = new Color3f(1.0f, 0.0f, 0.0f);
@@ -248,18 +248,18 @@ public class Crosshairs implements UniverseListener, KeyListener {
 		}
 	}
 
-	@Override
+	
 	public void transformationFinished(View view) {
 		update();
 	}
 
-	@Override
+	
 	public void transformationStarted(View view) {
 		univ.getGlobalMaxPoint(globalMax);
 		univ.getGlobalMinPoint(globalMin);
 	}
 
-	@Override
+	
 	public void transformationUpdated(View view) {
 		try {
 			if (univ.getSelected().equals(cX)) {
@@ -288,13 +288,13 @@ public class Crosshairs implements UniverseListener, KeyListener {
 
 	}
 
-	@Override
+	
 	public void universeClosed() {
 		// TODO Auto-generated method stub
 
 	}
 
-	@Override
+	
 	public void keyPressed(KeyEvent e) {
 		// allow translation when shift is pressed
 		if (e.getKeyCode() == 16) {
@@ -304,7 +304,7 @@ public class Crosshairs implements UniverseListener, KeyListener {
 		}
 	}
 
-	@Override
+	
 	public void keyReleased(KeyEvent e) {
 		// prevent rotation
 		if (e.getKeyCode() == 16) {
@@ -318,7 +318,7 @@ public class Crosshairs implements UniverseListener, KeyListener {
 		}
 	}
 
-	@Override
+	
 	public void keyTyped(KeyEvent e) {
 		// TODO Auto-generated method stub
 

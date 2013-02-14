@@ -371,55 +371,55 @@ public class LandmarkHelper implements PlugIn, UniverseListener,
 		}
 	}
 
-	@Override
+	
 	public void canvasResized() {
 		syncViewers();
 	}
 
-	@Override
+	
 	public void contentAdded(Content c) {
 		syncViewers();
 	}
 
-	@Override
+	
 	public void contentChanged(Content c) {
 		syncViewers();
 	}
 
-	@Override
+	
 	public void contentRemoved(Content c) {
 		syncViewers();
 	}
 
-	@Override
+	
 	public void contentSelected(Content c) {
 		syncViewers();
 
 	}
 
-	@Override
+	
 	public void transformationFinished(View view) {
 		syncViewers();
 
 	}
 
-	@Override
+	
 	public void transformationStarted(View view) {
 		syncViewers();
 
 	}
 
-	@Override
+	
 	public void transformationUpdated(View view) {
 		syncViewers();
 
 	}
 
-	@Override
+	
 	public void universeClosed() {
 	}
 
-	@Override
+	
 	public void mouseClicked(MouseEvent e) {
 		if (IJ.controlKeyDown()) {
 			int[] crossLoc = orthoViewer.getCrossLoc();
@@ -440,80 +440,80 @@ public class LandmarkHelper implements PlugIn, UniverseListener,
 		}
 	}
 
-	@Override
+	
 	public void mouseEntered(MouseEvent e) {
 	}
 
-	@Override
+	
 	public void mouseExited(MouseEvent e) {
 	}
 
-	@Override
+	
 	public void mousePressed(MouseEvent e) {
 	}
 
-	@Override
+	
 	public void mouseReleased(MouseEvent e) {
 		syncViewers();
 	}
 
-	@Override
+	
 	public void keyPressed(KeyEvent e) {
 	}
 
-	@Override
+	
 	public void keyReleased(KeyEvent e) {
 		syncViewers();
 	}
 
-	@Override
+	
 	public void keyTyped(KeyEvent e) {
 	}
 
-	@Override
+	
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		syncViewers();
 	}
 
-	@Override
+	
 	public void mouseDragged(MouseEvent e) {
 		syncViewers();
 	}
 
-	@Override
+	
 	public void mouseMoved(MouseEvent e) {
 
 	}
 
-	@Override
+	
 	public void adjustmentValueChanged(AdjustmentEvent e) {
 		syncViewers();
 	}
 
-	@Override
+	
 	public void added(BenesNamedPoint p) {
 		landmarks.add(new Landmark(p.x, p.y, p.z, p.getName()));
 		updateLandmarks();
 	}
 
-	@Override
+	
 	public void highlighted(BenesNamedPoint p) {
 	}
 
-	@Override
+	
 	public void moved(BenesNamedPoint p) {
 		updateLandmarks();
 	}
 
-	@Override
+	
 	public void removed(BenesNamedPoint p) {
 	}
 
-	@Override
+	
 	public void renamed(BenesNamedPoint p) {
 	}
 
-	@Override
+	
 	public void reordered() {
 	}
 
