@@ -37,7 +37,6 @@ import javax.vecmath.Point3d;
 import org.doube.bonej.geomorph.Crosshairs;
 import org.doube.bonej.geomorph.Landmark;
 import org.doube.util.ImageCheck;
-import org.doube.util.RoiMan;
 
 import orthoslice.OrthoGroup;
 import vib.BenesNamedPoint;
@@ -101,7 +100,6 @@ public class LandmarkHelper implements PlugIn, UniverseListener,
 	private PointListDialog pld = null;
 	private Calibration cal;
 	private RoiManager roiManager;
-	private RoiMan roiMan;
 
 	public void run(String arg) {
 		if (!ImageCheck.checkEnvironment())
