@@ -37,6 +37,7 @@ import javax.vecmath.Point3d;
 import org.doube.bonej.geomorph.Crosshairs;
 import org.doube.bonej.geomorph.Landmark;
 import org.doube.util.ImageCheck;
+import org.doube.util.UsageReporter;
 
 import orthoslice.OrthoGroup;
 import vib.BenesNamedPoint;
@@ -143,6 +144,7 @@ public class LandmarkHelper implements PlugIn, UniverseListener,
 		pld.addPointList("Landmarks", plPanel);
 		addListeners();
 		landmarks = new ArrayList<Landmark>();
+		UsageReporter.reportEvent(this).send();
 	}
 
 	private void addListeners() {
