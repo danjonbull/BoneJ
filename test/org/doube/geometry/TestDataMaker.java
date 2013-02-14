@@ -2,6 +2,7 @@ package org.doube.geometry;
 
 import ij.ImagePlus;
 import ij.ImageStack;
+import org.doube.skeleton.Skeletonize3D;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
@@ -10,6 +11,11 @@ import java.util.List;
 
 import javax.vecmath.Point3f;
 
+/**
+ * Static methods to generate images for testing
+ * 
+ * @author Michael Doube
+ */
 public class TestDataMaker {
 
 	/**
@@ -126,4 +132,90 @@ public class TestDataMaker {
 		return imp;
 	}
 
+	/**
+	 * Draw a circle with vertical and horizontal crossing, then skeletonize it
+	 * 
+	 * @param size
+	 *            width and height of the image, circle diameter is size/2
+	 * @return image containing a white (255) circle on black (0) background
+	 */
+	public static ImagePlus crossedCircle(int size) {
+		ImageProcessor ip = new ByteProcessor(size, size);
+		ip.setColor(0);
+		ip.fill();
+		ip.setColor(255);
+		ip.drawOval(size / 4, size / 4, size / 2, size / 2);
+		ip.drawLine(size / 2, size / 4, size / 2, 3 * size / 4);
+		ip.drawLine(size / 4, size / 2, 3 * size / 4, size / 2);
+		ImagePlus imp = new ImagePlus("crossed-circle", ip);
+		Skeletonize3D skel = new Skeletonize3D();
+		return skel.getSkeleton(imp);
+	}
+
+	/**
+	 * Draw the edges of a brick with 32 pixels of padding on all faces
+	 * 
+	 * @param width
+	 *            Width of the box frame in pixels
+	 * @param height
+	 *            Height of the box frame in pixels
+	 * @param depth
+	 *            Depth of the box frame in pixels
+	 * @return Image containing a 1-pixel wide outline of a 3D box
+	 */
+	public static ImagePlus boxFrame(int width, int height, int depth) {
+		ImageStack stack = new ImageStack(width + 64, height + 64);
+		for (int s = 1; s <= depth + 64; s++) {
+			ImageProcessor ip = new ByteProcessor(width + 64, height + 64);
+			ip.setColor(0);
+			ip.fill();
+			stack.addSlice(ip);
+		}
+		ImageProcessor ip = stack.getProcessor(32);
+		ip.setColor(255);
+		ip.drawRect(32, 32, width, height);
+		ip = stack.getProcessor(32 + depth);
+		ip.setColor(255);
+		ip.drawRect(32, 32, width, height);
+		for (int s = 33; s < 32 + depth; s++) {
+			ip = stack.getProcessor(s);
+			ip.setColor(255);
+			ip.drawPixel(32, 32);
+			ip.drawPixel(32, 31 + height);
+			ip.drawPixel(31 + width, 32);
+			ip.drawPixel(31 + width, 31 + height);
+		}
+		ImagePlus imp = new ImagePlus("box-frame", stack);
+		return imp;
+	}
+
+	public static ImagePlus binaryNoise(int width, int height, int depth,
+			double ratio) {
+		final int npixels = width * height;
+		ImageStack stack = new ImageStack(width, height);
+		for (int i = 0; i < depth; i++) {
+			ByteProcessor bp = new ByteProcessor(width, height);
+			for (int index = 0; index < npixels; index ++){
+				double random = Math.random();
+				if (random > ratio)
+					bp.set(index, 255);
+			}
+			stack.addSlice(bp);
+		}
+		ImagePlus imp = new ImagePlus("binary-noise", stack);
+		return imp;
+	}
+
+	public static ImagePlus plates(int width, int height, int depth, int spacing) {
+		ImageStack stack = new ImageStack(width, height);
+		for (int i = 0; i < depth; i++)
+			stack.addSlice(new ByteProcessor(width, height));
+		
+		for (int i = 1; i <= depth; i += spacing){
+			ByteProcessor bp = (ByteProcessor) stack.getProcessor(i);
+			bp.add(255);
+		}
+		ImagePlus imp = new ImagePlus("plates", stack);
+		return imp; 
+	}
 }
