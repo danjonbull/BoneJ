@@ -22,6 +22,7 @@
 package org.doube.bonej.pqct;
 
 import java.io.*;
+import java.util.Scanner;
 
 import ij.*;
 import ij.io.*;
@@ -111,6 +112,7 @@ public class Read_Stratec_File extends ImagePlus implements PlugIn {
 		} catch (Exception err) {
 			IJ.error("Stratec file read failed ", err.getMessage());
 		}
+		getBMDScalingFromTyp();
 		UsageReporter.reportEvent(this).send();
 	}
 
@@ -288,5 +290,12 @@ public class Read_Stratec_File extends ImagePlus implements PlugIn {
 			properties += propertyNames[i] + ": " + propertyValues[i] + "\n";
 		}
 		this.setProperty("Info", properties);
+	}
+	
+	private double[] getBMDScalingFromTyp(){
+		InputStream input = getClass().getResourceAsStream("/org/doube/bonej/pqct/typ/"+Device);
+		String inputStreamString = new Scanner(input,"UTF-8").useDelimiter("\\A").next();
+		IJ.log(inputStreamString);
+		return null;
 	}
 }
