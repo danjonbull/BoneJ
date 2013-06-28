@@ -112,7 +112,12 @@ public class Read_Stratec_File extends ImagePlus implements PlugIn {
 		} catch (Exception err) {
 			IJ.error("Stratec file read failed ", err.getMessage());
 		}
-		getBMDScalingFromTyp();
+		String typData = getTypData();
+		IJ.log(typData);
+		double xSlope = getTypValue("XSlope", typData);
+		double xInter = getTypValue("XInter", typData);
+		IJ.log(""+xSlope);
+		IJ.log(""+xInter);
 		UsageReporter.reportEvent(this).send();
 	}
 
@@ -291,11 +296,30 @@ public class Read_Stratec_File extends ImagePlus implements PlugIn {
 		}
 		this.setProperty("Info", properties);
 	}
-	
-	private double[] getBMDScalingFromTyp(){
-		InputStream input = getClass().getResourceAsStream("/org/doube/bonej/pqct/typ/"+Device);
-		String inputStreamString = new Scanner(input,"UTF-8").useDelimiter("\\A").next();
-		IJ.log(inputStreamString);
-		return null;
+
+	/**
+	 * Retrieve the instrument data from the corresponding .typ file
+	 * 
+	 * @return the instrument settings data as a String
+	 */
+	private String getTypData() {
+		IJ.log(Device);
+		InputStream input = getClass().getResourceAsStream(
+				"/org/doube/bonej/pqct/typ/" + Device);
+		String inputStreamString = new Scanner(input, "UTF-8").useDelimiter(
+				"\\A").next();
+		return inputStreamString;
+	}
+
+	private double getTypValue(String key, String typString) {
+		String[] lines = typString.split("\\r?\\n");
+		for (String line : lines) {
+			if (line.contains(key)) {
+				line = line.replaceAll("\\s", "");
+				line = line.substring(line.indexOf("=") + 1);
+				return Double.parseDouble(line);
+			}
+		}
+		throw new IllegalArgumentException("Invalid key");
 	}
 }
