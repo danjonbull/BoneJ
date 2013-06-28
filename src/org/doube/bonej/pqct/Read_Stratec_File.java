@@ -52,6 +52,8 @@ public class Read_Stratec_File extends ImagePlus implements PlugIn {
 	private double ObjLen; //
 	private String fileName;
 	private String properties;
+	private double xSlope;
+	private double xInter;
 
 	public Read_Stratec_File() { // Constructor
 		// this = null;
@@ -112,12 +114,6 @@ public class Read_Stratec_File extends ImagePlus implements PlugIn {
 		} catch (Exception err) {
 			IJ.error("Stratec file read failed ", err.getMessage());
 		}
-		String typData = getTypData();
-		IJ.log(typData);
-		double xSlope = getTypValue("XSlope", typData);
-		double xInter = getTypValue("XInter", typData);
-		IJ.log(""+xSlope);
-		IJ.log(""+xInter);
 		UsageReporter.reportEvent(this).send();
 	}
 
@@ -177,6 +173,11 @@ public class Read_Stratec_File extends ImagePlus implements PlugIn {
 			throw new UnsupportedDataTypeException(
 					"Apparently not a Stratec file, device string not found.");
 		}
+		//get attenuation -> BMD calibration from .TYP file
+		String typData = getTypData();
+		xSlope = getTypValue("XSlope", typData);
+		xInter = getTypValue("XInter", typData);
+
 		// Create ImageJ image
 		ImagePlus tempImage = NewImage.createShortImage(
 				fileName + " " + Double.toString(VoxelSize), PicMatrixX,
@@ -282,14 +283,15 @@ public class Read_Stratec_File extends ImagePlus implements PlugIn {
 		String[] propertyNames = { "File Name", "File Path", "Pixel Spacing",
 				"ObjLen", "MeasInfo", "Acquisition Date", "Device",
 				"PatMeasNo", "PatNo", "Patient's Birth Date", "Patient's Name",
-				"Patient ID", "PicX0", "PicY0", "Width", "Height",
+				"Patient ID", "PicX0", "PicY0", "Width", "Height", "XSlope", "XInter",
 				"Stratec File" };
 		String[] propertyValues = { fileName, directory,
 				Double.toString(VoxelSize), Double.toString(ObjLen), MeasInfo,
 				Long.toString(MeasDate), Device, Integer.toString(PatMeasNo),
 				Long.toString(PatNo), Long.toString(PatBirth), PatName, PatID,
 				Integer.toString(PicX0), Integer.toString(PicY0),
-				Integer.toString(PicMatrixX), Integer.toString(PicMatrixY), "1" };
+				Integer.toString(PicMatrixX), Integer.toString(PicMatrixY), 
+				Double.toString(xSlope), Double.toString(xInter), "1" };
 		properties = new String();
 		for (int i = 0; i < propertyNames.length; ++i) {
 			properties += propertyNames[i] + ": " + propertyValues[i] + "\n";
@@ -303,7 +305,6 @@ public class Read_Stratec_File extends ImagePlus implements PlugIn {
 	 * @return the instrument settings data as a String
 	 */
 	private String getTypData() {
-		IJ.log(Device);
 		InputStream input = getClass().getResourceAsStream(
 				"/org/doube/bonej/pqct/typ/" + Device);
 		String inputStreamString = new Scanner(input, "UTF-8").useDelimiter(
