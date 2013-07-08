@@ -1,3 +1,5 @@
+package org.bonej.histomorphometry;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.SystemColor;
@@ -23,7 +25,7 @@ import ij.gui.*;
 | bone surface, and maps the distributions of selected parameters onto the surface
 |
 \*******************************************************************************/
-public class Map_BoneMicrostructure extends PlugInFrame implements ActionListener, TextListener, ItemListener{
+public class MapBoneMicrostructure extends PlugInFrame implements ActionListener, TextListener, ItemListener{
 
 /*******************************************************************************\
 |
@@ -148,7 +150,7 @@ public class Map_BoneMicrostructure extends PlugInFrame implements ActionListene
 |  Constructor
 |
 \**************************************************************************/
-	public Map_BoneMicrostructure(){
+	public MapBoneMicrostructure(){
 		super("Map_BoneMicrostructure");
 		
 		// Dequote to automatically open an image. 
