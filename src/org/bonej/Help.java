@@ -21,7 +21,7 @@ public class Help implements PlugIn {
 	/**
 	 * branch
 	 */
-	public static final String branch = "-from-vasilis";
+	public static final String branch = "-integration";
 	
 	/**
 	 * BoneJ version
