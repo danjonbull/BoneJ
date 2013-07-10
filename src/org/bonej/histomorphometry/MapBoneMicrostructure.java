@@ -151,7 +151,7 @@ public class MapBoneMicrostructure extends PlugInFrame implements ActionListener
 |
 \**************************************************************************/
 	public MapBoneMicrostructure(){
-		super("Map_BoneMicrostructure");
+		super("Map Bone Microstructure");
 		
 		// Dequote to automatically open an image. 
 		// Intended for debug purposes, where the plugin is invoked many consecutive times	
