@@ -1,19 +1,47 @@
 package org.bonej.histomorphometry;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Button;
+import java.awt.Checkbox;
+import java.awt.Choice;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.Label;
+import java.awt.Panel;
+import java.awt.Rectangle;
 import java.awt.SystemColor;
-import java.util.*;
-import javax.swing.*;
-import java.text.*;
+import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.TextEvent;
+import java.awt.event.TextListener;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 
-import ij.measure.Calibration;
+import javax.swing.BoxLayout;
+import javax.swing.JTextArea;
+
+import ij.IJ;
+import ij.ImagePlus;
+import ij.WindowManager;
+import ij.gui.ImageCanvas;
+import ij.gui.OvalRoi;
+import ij.gui.PolygonRoi;
+import ij.gui.Roi;
+import ij.gui.Wand;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
-import ij.plugin.frame.*;
-import ij.*;
-import ij.process.*;
-import ij.gui.*;
+import ij.plugin.frame.PlugInFrame;
+import ij.process.ByteProcessor;
+import ij.process.FloodFiller;
+import ij.process.ImageProcessor;
+import ij.process.PolygonFiller;
 
 /*******************************************************************************\
 |
@@ -1055,8 +1083,8 @@ public class MapBoneMicrostructure extends PlugInFrame implements ActionListener
 // DrawBoundingSquares(), invoked indirectly by TrapUserDefinedRoi(), 
 // is supposed to refresh the global variables 
 // sqrWidth, sqrX, sqrY, sqrXstart, sqrYstart, iRoisX, iRoisY
-		Roi impRoi = imp.getRoi();
-		Rectangle impRoiRect = impRoi.getBounds();
+//		Roi impRoi = imp.getRoi();
+//		Rectangle impRoiRect = impRoi.getBounds();
 		TrapUserDefinedRoi();
 		
 // Split image to square Rois of width sqrWidth.
@@ -1183,11 +1211,11 @@ public class MapBoneMicrostructure extends PlugInFrame implements ActionListener
 		if (blnAutoThreshold == true) {
 			level1 = 0;
 			level2 = ip2.getAutoThreshold();	
-			ip2.setThreshold(level1, level2, ip2.RED_LUT);				
+			ip2.setThreshold(level1, level2, ImageProcessor.RED_LUT);				
 		} else {
 			level1 = ip.getMinThreshold();
 			level2 = ip.getMaxThreshold();
-			ip2.setThreshold(level1, level2, ip2.RED_LUT);				
+			ip2.setThreshold(level1, level2, ImageProcessor.RED_LUT);				
 		}
 		
 // Calculate total currentRoi Area
@@ -1425,7 +1453,7 @@ public class MapBoneMicrostructure extends PlugInFrame implements ActionListener
 		double TAr; // Tissue Area
 		double BPm; // Bone Perimeter
 		double BATA; // Bone Area fraction
-		double BSTV; // Bone Surface
+//		double BSTV; // Bone Surface
 		double TbTh; // Trabecular Thickness
 		double TbSp; // Trabecular Separation
 		double TbN; // Trabecular Number
@@ -1435,7 +1463,7 @@ public class MapBoneMicrostructure extends PlugInFrame implements ActionListener
 		BPm = currentRoiParticlesTotalPerimeter;
 		
 		BATA = BAr/TAr;
-		BSTV = (BPm/TAr);
+//		BSTV = (BPm/TAr);
 		TbTh = (2)* (BAr/BPm);
 		TbSp = (2) * (TAr - BAr) / BPm;
 		TbN = (0.5)* (BPm/TAr);
