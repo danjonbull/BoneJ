@@ -229,7 +229,7 @@ public class Ellipsoid {
 		return points;
 	}
 
-	private void setEigenVectors(double[][] eigenVectors) {
+	public void setEigenVectors(double[][] eigenVectors) {
 		this.eigenVectors = eigenVectors;
 		this.eV00 = this.eigenVectors[0][0];
 		this.eV01 = this.eigenVectors[0][1];
@@ -293,5 +293,4 @@ public class Ellipsoid {
 		double minusZ = (-i - Math.sqrt(i * i + 4 * c)) / (2 * c);
 		return new double[] { plusX, minusX, plusY, minusY, plusZ, minusZ };
 	}
-
 }
