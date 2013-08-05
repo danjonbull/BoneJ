@@ -284,8 +284,8 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		IJ.log("Sphere fit with radius " + ellipsoid.getMajorRadius());
 
 		// get the points of contact
-		List<double[]> contactPoints = findContactPoints(ellipsoid, ips, pW,
-				pH, pD, w, h, d);
+		List<double[]> contactPoints = findSphereContactPoints(ellipsoid, ips,
+				pW, pH, pD, w, h, d);
 
 		// calculate the new orientation matrix for the ellipsoid
 		// short axis aligned to the contact points
@@ -309,21 +309,21 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 
 		double[][] pointCloud = ellipsoid.getSurfacePoints(100);
 
-		List<Point3f> pointList = new ArrayList<Point3f>();
-		for (int p = 0; p < pointCloud.length; p++) {
-			if (pointCloud[p] == null)
-				continue;
-			Point3f e = new Point3f();
-			e.x = (float) pointCloud[p][0];
-			e.y = (float) pointCloud[p][1];
-			e.z = (float) pointCloud[p][2];
-			pointList.add(e);
-		}
-//		CustomPointMesh mesh = new CustomPointMesh(pointList);
-//		mesh.setPointSize(2.0f);
+		// List<Point3f> pointList = new ArrayList<Point3f>();
+		// for (int p = 0; p < pointCloud.length; p++) {
+		// if (pointCloud[p] == null)
+		// continue;
+		// Point3f e = new Point3f();
+		// e.x = (float) pointCloud[p][0];
+		// e.y = (float) pointCloud[p][1];
+		// e.z = (float) pointCloud[p][2];
+		// pointList.add(e);
+		// }
+		// CustomPointMesh mesh = new CustomPointMesh(pointList);
+		// mesh.setPointSize(2.0f);
 		Color3f cColour = new Color3f((float) (px / pW) / w, (float) (py / pH)
 				/ h, (float) (pz / pD) / d);
-//		mesh.setColor(cColour);
+		// mesh.setColor(cColour);
 
 		CustomPointMesh contactPointMesh = new CustomPointMesh(contactPointsf);
 		contactPointMesh.setPointSize(2.5f);
@@ -332,8 +332,8 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		contactPointMesh.setColor(invColour);
 
 		try {
-//			universe.addCustomMesh(mesh,
-//					"Point cloud " + px + " " + py + " " + pz).setLocked(true);
+			// universe.addCustomMesh(mesh,
+			// "Point cloud " + px + " " + py + " " + pz).setLocked(true);
 			universe.addCustomMesh(contactPointMesh,
 					"Contact points of " + px + " " + py + " " + pz).setLocked(
 					true);
@@ -341,6 +341,10 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		} catch (NullPointerException npe) {
 			IJ.log("3D Viewer was closed before rendering completed.");
 		}
+
+		// now dilate long and middle axes until they hit the sides
+		// new points will be added to contact point list
+
 		return ellipsoid;
 	}
 
@@ -360,7 +364,7 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		List<Point3f> longAxis = new ArrayList<Point3f>();
 		List<Point3f> middleAxis = new ArrayList<Point3f>();
 		List<Point3f> shortAxis = new ArrayList<Point3f>();
-		
+
 		Point3f start1 = new Point3f();
 		start1.x = (float) (cX - ra * eV[0][0]);
 		start1.y = (float) (cY - ra * eV[1][0]);
@@ -403,8 +407,8 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		try {
 			universe.addLineMesh(longAxis, red, "Long axis " + cX + cY + cZ,
 					false).setLocked(true);
-			universe.addLineMesh(middleAxis, green, "Middle axis " + cX + cY + cZ,
-					false).setLocked(true);
+			universe.addLineMesh(middleAxis, green,
+					"Middle axis " + cX + cY + cZ, false).setLocked(true);
 			universe.addLineMesh(shortAxis, blue, "Short axis " + cX + cY + cZ,
 					false).setLocked(true);
 		} catch (NullPointerException npe) {
@@ -471,7 +475,7 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		return ellipsoid;
 	}
 
-	private List<double[]> findContactPoints(Ellipsoid ellipsoid,
+	private List<double[]> findSphereContactPoints(Ellipsoid ellipsoid,
 			ByteProcessor[] ips, final double pW, final double pH,
 			final double pD, final int w, final int h, final int d) {
 		double[][] points = ellipsoid.getSurfacePoints(nVectors);
