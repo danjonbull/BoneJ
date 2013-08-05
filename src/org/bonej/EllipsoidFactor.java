@@ -38,6 +38,8 @@ import ij3d.Image3DUniverse;
 
 import org.doube.geometry.Vectors;
 import org.doube.geometry.Ellipsoid;
+import org.doube.jama.EigenvalueDecomposition;
+import org.doube.jama.Matrix;
 import org.doube.skeleton.Skeletonize3D;
 import org.doube.util.ArrayHelper;
 import org.doube.util.ImageCheck;
@@ -213,8 +215,8 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 			double[][] unitVectors) {
 		final int nPoints = skeletonPoints.length;
 		Ellipsoid[] ellipsoids = new Ellipsoid[nPoints];
-		
-		//make sure array contains null in the non-calculated elements
+
+		// make sure array contains null in the non-calculated elements
 		Arrays.fill(ellipsoids, null);
 
 		for (int i = 0; i < nPoints; i += skipRatio) {
@@ -276,7 +278,7 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		// dilate the sphere until it hits the background
 		while (isContained(ellipsoid, ips, pW, pH, pD, w, h, d)) {
 			ellipsoid.dilate(vectorIncrement);
-			IJ.showStatus("Ellipsoid volume = "+ellipsoid.getVolume());
+			IJ.showStatus("Ellipsoid volume = " + ellipsoid.getVolume());
 		}
 
 		IJ.log("Sphere fit with radius " + ellipsoid.getMajorRadius());
@@ -285,7 +287,14 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		List<double[]> contactPoints = findContactPoints(ellipsoid, ips, pW,
 				pH, pD, w, h, d);
 
-		// add them to the 3D viewer
+		// calculate the new orientation matrix for the ellipsoid
+		// short axis aligned to the contact points
+		ellipsoid = reOrientEllipsoid(contactPoints, ellipsoid);
+
+		// display axes in 3D viewer
+		drawAxes(ellipsoid);
+
+		// add points of contact to the 3D viewer
 		List<Point3f> contactPointsf = new ArrayList<Point3f>(
 				contactPoints.size());
 		for (double[] p : contactPoints) {
@@ -310,11 +319,11 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 			e.z = (float) pointCloud[p][2];
 			pointList.add(e);
 		}
-		CustomPointMesh mesh = new CustomPointMesh(pointList);
-		mesh.setPointSize(2.0f);
-		Color3f cColour = new Color3f((float) (px / pW) / w, (float) (py / pH) / h,
-				(float) (pz / pD) / d);
-		mesh.setColor(cColour);
+//		CustomPointMesh mesh = new CustomPointMesh(pointList);
+//		mesh.setPointSize(2.0f);
+		Color3f cColour = new Color3f((float) (px / pW) / w, (float) (py / pH)
+				/ h, (float) (pz / pD) / d);
+//		mesh.setColor(cColour);
 
 		CustomPointMesh contactPointMesh = new CustomPointMesh(contactPointsf);
 		contactPointMesh.setPointSize(2.5f);
@@ -323,8 +332,8 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		contactPointMesh.setColor(invColour);
 
 		try {
-			universe.addCustomMesh(mesh,
-					"Point cloud " + px + " " + py + " " + pz).setLocked(true);
+//			universe.addCustomMesh(mesh,
+//					"Point cloud " + px + " " + py + " " + pz).setLocked(true);
 			universe.addCustomMesh(contactPointMesh,
 					"Contact points of " + px + " " + py + " " + pz).setLocked(
 					true);
@@ -332,6 +341,133 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		} catch (NullPointerException npe) {
 			IJ.log("3D Viewer was closed before rendering completed.");
 		}
+		return ellipsoid;
+	}
+
+	private void drawAxes(Ellipsoid ellipsoid) {
+		final double[] centroid = ellipsoid.getCentre();
+		final double cX = centroid[0];
+		final double cY = centroid[1];
+		final double cZ = centroid[2];
+
+		final double[] radii = ellipsoid.getRadii();
+		final double ra = radii[0];
+		final double rb = radii[1];
+		final double rc = radii[2];
+
+		final double[][] eV = ellipsoid.getEigenVectors();
+
+		List<Point3f> longAxis = new ArrayList<Point3f>();
+		List<Point3f> middleAxis = new ArrayList<Point3f>();
+		List<Point3f> shortAxis = new ArrayList<Point3f>();
+		
+		Point3f start1 = new Point3f();
+		start1.x = (float) (cX - ra * eV[0][0]);
+		start1.y = (float) (cY - ra * eV[1][0]);
+		start1.z = (float) (cZ - ra * eV[2][0]);
+		longAxis.add(start1);
+
+		Point3f end1 = new Point3f();
+		end1.x = (float) (cX + ra * eV[0][0]);
+		end1.y = (float) (cY + ra * eV[1][0]);
+		end1.z = (float) (cZ + ra * eV[2][0]);
+		longAxis.add(end1);
+
+		Point3f start2 = new Point3f();
+		start2.x = (float) (cX - rb * eV[0][1]);
+		start2.y = (float) (cY - rb * eV[1][1]);
+		start2.z = (float) (cZ - rb * eV[2][1]);
+		middleAxis.add(start2);
+
+		Point3f end2 = new Point3f();
+		end2.x = (float) (cX + rb * eV[0][1]);
+		end2.y = (float) (cY + rb * eV[1][1]);
+		end2.z = (float) (cZ + rb * eV[2][1]);
+		middleAxis.add(end2);
+
+		Point3f start3 = new Point3f();
+		start3.x = (float) (cX - rc * eV[0][2]);
+		start3.y = (float) (cY - rc * eV[1][2]);
+		start3.z = (float) (cZ - rc * eV[2][2]);
+		shortAxis.add(start3);
+
+		Point3f end3 = new Point3f();
+		end3.x = (float) (cX + rc * eV[0][2]);
+		end3.y = (float) (cY + rc * eV[1][2]);
+		end3.z = (float) (cZ + rc * eV[2][2]);
+		shortAxis.add(end3);
+
+		Color3f red = new Color3f(1.0f, 0.0f, 0.0f);
+		Color3f green = new Color3f(0.0f, 1.0f, 0.0f);
+		Color3f blue = new Color3f(0.0f, 0.0f, 1.0f);
+		try {
+			universe.addLineMesh(longAxis, red, "Long axis " + cX + cY + cZ,
+					false).setLocked(true);
+			universe.addLineMesh(middleAxis, green, "Middle axis " + cX + cY + cZ,
+					false).setLocked(true);
+			universe.addLineMesh(shortAxis, blue, "Short axis " + cX + cY + cZ,
+					false).setLocked(true);
+		} catch (NullPointerException npe) {
+			IJ.log("3D Viewer was closed before rendering completed.");
+			return;
+		}
+
+	}
+
+	private Ellipsoid reOrientEllipsoid(List<double[]> contactPoints,
+			Ellipsoid ellipsoid) {
+		// generate a covariance matrix from the contact points
+		final double[] centroid = ellipsoid.getCentre();
+		final double cX = centroid[0];
+		final double cY = centroid[1];
+		final double cZ = centroid[2];
+
+		double sDxDx = 0;
+		double sDyDy = 0;
+		double sDzDz = 0;
+		double sDxDy = 0;
+		double sDxDz = 0;
+		double sDyDz = 0;
+		for (double[] p : contactPoints) {
+			final double dx = p[0] - cX;
+			final double dy = p[1] - cY;
+			final double dz = p[2] - cZ;
+			sDxDx += dx * dx;
+			sDyDy += dy * dy;
+			sDzDz += dz * dz;
+			sDxDy += dx * dy;
+			sDxDz += dx * dz;
+			sDyDz += dy * dz;
+		}
+		double[][] c = new double[3][3];
+		c[0][0] = sDxDx;
+		c[1][1] = sDyDy;
+		c[2][2] = sDzDz;
+		c[0][1] = sDxDy;
+		c[0][2] = sDxDz;
+		c[1][0] = sDxDy;
+		c[1][2] = sDyDz;
+		c[2][0] = sDxDz;
+		c[2][1] = sDyDz;
+		// do the eigendecomposition, maybe SVD?
+
+		Matrix C = new Matrix(c);
+		System.out.println("Covariance matrix");
+		C.print(10, 8);
+
+		EigenvalueDecomposition E = C.eig();
+
+		System.out.println("Eigenvectors");
+		E.getV().print(10, 8);
+
+		System.out.println("Eigenvalues");
+		E.getD().print(10, 8);
+
+		// assign the largest eigenvalue's vector to be the short axis of the
+		// ellipsoid
+
+		ellipsoid.setEigenVectors(E.getV().getArrayCopy());
+
 		return ellipsoid;
 	}
 
