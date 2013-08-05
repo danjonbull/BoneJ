@@ -259,6 +259,18 @@ public class Ellipsoid {
 	}
 
 	/**
+	 * Dilate the long and middle axis by the same increment,
+	 * leaving the short axis the same
+	 * 
+	 * @param increment
+	 */
+	public void dilateOblate(double increment) {
+		ra += increment;
+		rb += increment;
+		setVolume();
+	}
+	
+	/**
 	 * Constrict all three axes by an increment
 	 * 
 	 * @param increment
