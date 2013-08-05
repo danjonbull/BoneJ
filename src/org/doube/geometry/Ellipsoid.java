@@ -242,6 +242,10 @@ public class Ellipsoid {
 		this.eV22 = this.eigenVectors[2][2];
 	}
 
+	public double[][] getEigenVectors(){
+		return this.eigenVectors.clone();
+	}
+	
 	/**
 	 * Dilate all three axes by an increment
 	 * 
