@@ -4,8 +4,6 @@ import java.util.Arrays;
 
 import org.doube.jama.Matrix;
 
-import ij.IJ;
-
 /**
  * <p>
  * Represents an ellipsoid defined as <i>ax</i><sup>2</sup> +

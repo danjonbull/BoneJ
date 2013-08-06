@@ -307,7 +307,7 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		// inside the foregrounds
 		// ellipsoid.contract(vectorIncrement);
 
-		double[][] pointCloud = ellipsoid.getSurfacePoints(100);
+//		double[][] pointCloud = ellipsoid.getSurfacePoints(100);
 
 		// List<Point3f> pointList = new ArrayList<Point3f>();
 		// for (int p = 0; p < pointCloud.length; p++) {
@@ -344,6 +344,39 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 
 		// now dilate long and middle axes until they hit the sides
 		// new points will be added to contact point list
+
+		ellipsoid = findDiscusContactPoints(ellipsoid, contactPoints, ips, pW,
+				pH, pD, w, h, d);
+
+		drawAxes(ellipsoid);
+
+		return ellipsoid;
+	}
+
+	private Ellipsoid findDiscusContactPoints(Ellipsoid ellipsoid,
+			List<double[]> contactPoints, ByteProcessor[] ips, double pW,
+			double pH, double pD, int w, int h, int d) {
+		// dilate long and middle axes until new contact points are
+		// added to the List
+		final int nSphereContacts = contactPoints.size();
+		System.out.println("nSphereContacts = " + nSphereContacts);
+		while (true) {
+			int nDiscusContacts = 0;
+			ellipsoid.dilateOblate(vectorIncrement);
+			double[][] points = ellipsoid.getSurfacePoints(100);
+			for (double[] p : points) {
+				final int x = (int) Math.floor(p[0] / pW);
+				final int y = (int) Math.floor(p[1] / pH);
+				final int z = (int) Math.floor(p[2] / pD);
+				if (isOutOfBounds(x, y, z, w, h, d))
+					continue;
+				if (!isPointContained(ips, x, y, z))
+					nDiscusContacts++;
+				System.out.println("nDiscusContacts = " + nDiscusContacts);
+			}
+			if (nDiscusContacts > nSphereContacts)
+				break;
+		}
 
 		return ellipsoid;
 	}
@@ -405,12 +438,18 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		Color3f green = new Color3f(0.0f, 1.0f, 0.0f);
 		Color3f blue = new Color3f(0.0f, 0.0f, 1.0f);
 		try {
-			universe.addLineMesh(longAxis, red, "Long axis " + cX + cY + cZ,
-					false).setLocked(true);
-			universe.addLineMesh(middleAxis, green,
-					"Middle axis " + cX + cY + cZ, false).setLocked(true);
-			universe.addLineMesh(shortAxis, blue, "Short axis " + cX + cY + cZ,
-					false).setLocked(true);
+			String longAxisName = "Long axis " + cX + cY + cZ;
+			String middleAxisName = "Middle axis " + cX + cY + cZ;
+			String shortAxisName = "Short axis " + cX + cY + cZ;
+			universe.removeContent(longAxisName);
+			universe.removeContent(middleAxisName);
+			universe.removeContent(shortAxisName);
+			universe.addLineMesh(longAxis, red, longAxisName, false).setLocked(
+					true);
+			universe.addLineMesh(middleAxis, green, middleAxisName, false)
+					.setLocked(true);
+			universe.addLineMesh(shortAxis, blue, shortAxisName, false)
+					.setLocked(true);
 		} catch (NullPointerException npe) {
 			IJ.log("3D Viewer was closed before rendering completed.");
 			return;
@@ -488,7 +527,7 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 			final int z = (int) Math.floor(p[2] / pD);
 			if (isOutOfBounds(x, y, z, w, h, d))
 				continue;
-			if ((byte) ips[z].get(x, y) != foreground)
+			if (!isPointContained(ips, x, y, z))
 				contactPoints.add(p);
 		}
 		return contactPoints;
@@ -504,10 +543,14 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 			final int z = (int) Math.floor(p[2] / pD);
 			if (isOutOfBounds(x, y, z, w, h, d))
 				continue;
-			if ((byte) ips[z].get(x, y) != foreground)
+			if (!isPointContained(ips, x, y, z))
 				return false;
 		}
 		return true;
+	}
+
+	private boolean isPointContained(ByteProcessor[] ips, int x, int y, int z) {
+		return ((byte) ips[z].get(x, y) == foreground);
 	}
 
 	/**
