@@ -284,8 +284,8 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		IJ.log("Sphere fit with radius " + ellipsoid.getMajorRadius());
 
 		// get the points of contact
-		List<double[]> contactPoints = findSphereContactPoints(ellipsoid, ips,
-				pW, pH, pD, w, h, d);
+		List<double[]> contactPoints = findContactPoints(ellipsoid, ips, pW,
+				pH, pD, w, h, d);
 
 		// calculate the new orientation matrix for the ellipsoid
 		// short axis aligned to the contact points
@@ -294,66 +294,46 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		// display axes in 3D viewer
 		drawAxes(ellipsoid);
 
+		Color3f colour = locationColour(px, py, pz, pW, pH, pD, w, h, d);
+
 		// add points of contact to the 3D viewer
-		List<Point3f> contactPointsf = new ArrayList<Point3f>(
-				contactPoints.size());
-		for (double[] p : contactPoints) {
-			Point3f point = new Point3f((float) p[0], (float) p[1],
-					(float) p[2]);
-			contactPointsf.add(point);
-		}
+		drawPoints(contactPoints, invertColour(colour), "Contact points of "
+				+ px + " " + py + " " + pz);
 
 		// contract the ellipsoid by one increment so all points are
 		// inside the foregrounds
 		// ellipsoid.contract(vectorIncrement);
 
-//		double[][] pointCloud = ellipsoid.getSurfacePoints(100);
-
-		// List<Point3f> pointList = new ArrayList<Point3f>();
-		// for (int p = 0; p < pointCloud.length; p++) {
-		// if (pointCloud[p] == null)
-		// continue;
-		// Point3f e = new Point3f();
-		// e.x = (float) pointCloud[p][0];
-		// e.y = (float) pointCloud[p][1];
-		// e.z = (float) pointCloud[p][2];
-		// pointList.add(e);
-		// }
-		// CustomPointMesh mesh = new CustomPointMesh(pointList);
-		// mesh.setPointSize(2.0f);
-		Color3f cColour = new Color3f((float) (px / pW) / w, (float) (py / pH)
-				/ h, (float) (pz / pD) / d);
-		// mesh.setColor(cColour);
-
-		CustomPointMesh contactPointMesh = new CustomPointMesh(contactPointsf);
-		contactPointMesh.setPointSize(2.5f);
-		Color3f invColour = new Color3f(1 - cColour.x, 1 - cColour.y,
-				1 - cColour.z);
-		contactPointMesh.setColor(invColour);
-
-		try {
-			// universe.addCustomMesh(mesh,
-			// "Point cloud " + px + " " + py + " " + pz).setLocked(true);
-			universe.addCustomMesh(contactPointMesh,
-					"Contact points of " + px + " " + py + " " + pz).setLocked(
-					true);
-
-		} catch (NullPointerException npe) {
-			IJ.log("3D Viewer was closed before rendering completed.");
-		}
+		// draw whole ellipsoid
+		// drawPoints(ellipsoid.getSurfacePoints(100), colour, "Point cloud " +
+		// px + " " + py + " " + pz);
 
 		// now dilate long and middle axes until they hit the sides
 		// new points will be added to contact point list
 
-		ellipsoid = findDiscusContactPoints(ellipsoid, contactPoints, ips, pW,
+		ellipsoid = dilateDiscusFromSphere(ellipsoid, contactPoints, ips, pW,
 				pH, pD, w, h, d);
 
+		contactPoints = findContactPoints(ellipsoid, ips, pW, pH, pD, w, h, d);
+
 		drawAxes(ellipsoid);
+		drawPoints(contactPoints, invertColour(colour), "Contact points of "
+				+ px + " " + py + " " + pz);
 
 		return ellipsoid;
 	}
 
-	private Ellipsoid findDiscusContactPoints(Ellipsoid ellipsoid,
+	private Color3f locationColour(double px, double py, double pz, double pW,
+			double pH, double pD, int w, int h, int d) {
+		return new Color3f((float) (px / pW) / w, (float) (py / pH) / h,
+				(float) (pz / pD) / d);
+	}
+
+	private Color3f invertColour(Color3f colour) {
+		return new Color3f(1 - colour.x, 1 - colour.y, 1 - colour.z);
+	}
+
+	private Ellipsoid dilateDiscusFromSphere(Ellipsoid ellipsoid,
 			List<double[]> contactPoints, ByteProcessor[] ips, double pW,
 			double pH, double pD, int w, int h, int d) {
 		// dilate long and middle axes until new contact points are
@@ -457,6 +437,34 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 
 	}
 
+	private void drawPoints(List<double[]> points, Color3f color, String name) {
+		List<Point3f> pointsf = new ArrayList<Point3f>(points.size());
+		for (double[] p : points) {
+			Point3f point = new Point3f((float) p[0], (float) p[1],
+					(float) p[2]);
+			pointsf.add(point);
+		}
+
+		CustomPointMesh pointMesh = new CustomPointMesh(pointsf);
+		pointMesh.setPointSize(2.5f);
+		pointMesh.setColor(color);
+
+		try {
+			universe.removeContent(name);
+			universe.addCustomMesh(pointMesh, name).setLocked(true);
+		} catch (NullPointerException npe) {
+			IJ.log("3D Viewer was closed before rendering completed.");
+		}
+
+	}
+
+	private void drawPoints(double[][] points, Color3f colour, String name) {
+		List<double[]> pointList = new ArrayList<double[]>(points.length);
+		for (double[] p : points)
+			pointList.add(p);
+		drawPoints(pointList, colour, name);
+	}
+
 	private Ellipsoid reOrientEllipsoid(List<double[]> contactPoints,
 			Ellipsoid ellipsoid) {
 		// generate a covariance matrix from the contact points
@@ -514,7 +522,7 @@ public class EllipsoidFactor implements PlugIn, Comparator<Ellipsoid> {
 		return ellipsoid;
 	}
 
-	private List<double[]> findSphereContactPoints(Ellipsoid ellipsoid,
+	private List<double[]> findContactPoints(Ellipsoid ellipsoid,
 			ByteProcessor[] ips, final double pW, final double pH,
 			final double pD, final int w, final int h, final int d) {
 		double[][] points = ellipsoid.getSurfacePoints(nVectors);
